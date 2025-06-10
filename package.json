@@ -15,10 +15,13 @@
     "@solana/wallet-adapter-wallets": "^0.19.36",
     "@thirdweb-dev/react": "^4.9.4",
     "framer-motion": "^12.16.0",
+    "gray-matter": "^4.0.3",
     "lucide-react": "^0.513.0",
     "next": "15.3.3",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "remark": "^15.0.1",
+    "remark-html": "^16.0.1",
     "wagmi": "^2.15.6",
     "zustand": "^5.0.5"
   },
