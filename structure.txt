@@ -1,0 +1,118 @@
+.
+├── audit_report.md
+├── cahier_charges_parcours_react.md
+├── community_voice_to_synaptic_strategy.md
+├── components
+│   ├── Journey
+│   │   ├── EnhancedJourneyCard.tsx
+│   │   ├── FinalRoleSection
+│   │   │   ├── FinalRoleSection.tsx
+│   │   │   └── index.ts
+│   │   ├── index.ts
+│   │   ├── Intro
+│   │   │   ├── index.ts
+│   │   │   └── JourneyIntro.tsx
+│   │   ├── JourneyFilters.tsx
+│   │   ├── JourneyHeader
+│   │   │   ├── index.ts
+│   │   │   └── JourneyHeader.tsx
+│   │   ├── JourneyIntro.tsx
+│   │   ├── JourneySidebar
+│   │   │   ├── index.ts
+│   │   │   └── JourneySidebar.tsx
+│   │   ├── JourneyTimeline.tsx
+│   │   ├── PhaseNavigator.tsx
+│   │   ├── Phases
+│   │   │   ├── EnhancedVerticalTimeline.tsx
+│   │   │   ├── index.ts
+│   │   │   ├── PhaseFeedback.tsx
+│   │   │   ├── PhaseNavigator.tsx
+│   │   │   ├── PhaseSection.tsx
+│   │   │   └── PhaseSystem.tsx
+│   │   ├── PhaseSection.tsx
+│   │   ├── Rewards
+│   │   │   ├── index.ts
+│   │   │   ├── NFTBadge.tsx
+│   │   │   ├── ProofSection.tsx
+│   │   │   └── RewardBadge.tsx
+│   │   ├── SkillchainMap.tsx
+│   │   ├── Timeline
+│   │   │   ├── index.ts
+│   │   │   └── VerticalTimeline.tsx
+│   │   ├── WhyItMatters
+│   │   │   ├── index.ts
+│   │   │   └── WhyItMatters.tsx
+│   │   ├── XPTracker.tsx
+│   │   ├── Zyno
+│   │   │   ├── index.ts
+│   │   │   ├── ZynoActions.tsx
+│   │   │   ├── ZynoBox.tsx
+│   │   │   └── ZynoSimulator.tsx
+│   │   └── ZynoSimulator.tsx
+│   ├── Layout
+│   │   ├── AlertBanner.tsx
+│   │   └── MainLayout.tsx
+│   ├── ui
+│   │   ├── badge.tsx
+│   │   ├── button.tsx
+│   │   ├── card.tsx
+│   │   ├── modal.tsx
+│   │   ├── progress.tsx
+│   │   └── toast.tsx
+│   ├── Wallet
+│   │   ├── NFTGate.tsx
+│   │   └── WalletConnect.tsx
+│   └── WalletConnect.tsx
+├── Content_Maker_to_Cognitive_Publisher.md
+├── docs
+│   ├── files_to_remove.md
+│   └── structure_audited.md
+├── eslint.config.mjs
+├── From_Project_Manager_to_Mission_Commander.md
+├── hooks
+│   ├── useKeyboardNavigation.ts
+│   └── usePhaseFeedback.ts
+├── journeys
+│   ├── From_Community_Voice_to_Synaptic_Strategist.md
+│   ├── From_Content_Maker_to_Cognitive_Publisher.md
+│   ├── From_Data_Miner_to_Intelligence_Synthesizer.md
+│   ├── From_Idea_Carrier_to_Protocol_Engineer.md
+│   ├── From_Project_Manager_to_Mission_Commander.md
+│   ├── From_Silent_Watcher_to_Protocol_Backer.md
+│   └── From_Web2_Hustler_to_Web3_Sovereign.md
+├── next.config.ts
+├── next-env.d.ts
+├── package.json
+├── package-lock.json
+├── pages
+│   ├── _app.tsx
+│   ├── _document.tsx
+│   ├── index.tsx
+│   ├── journey
+│   │   └── [slug].tsx
+│   ├── journeys
+│   │   └── index.tsx
+│   └── zyno-preview.tsx
+├── postcss.config.mjs
+├── README.md
+├── structure.txt
+├── styles
+│   └── globals.css
+├── tailwind.config.js
+├── tsconfig.json
+├── tsconfig.tsbuildinfo
+├── types
+│   └── journey.ts
+├── utils
+│   ├── adapters.ts
+│   ├── journeyData.ts
+│   ├── journeyRegistry.ts
+│   ├── markdownParser.ts
+│   ├── nftUtils.ts
+│   ├── store.ts
+│   ├── types.ts
+│   └── zynoLogic.ts
+├── web2_to_web3.md
+└── web3_explorer_to_protocol_architect.md
+
+24 directories, 92 files

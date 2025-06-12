@@ -1,6 +1,6 @@
 import { FC, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import PhaseSection from './PhaseSection';
+import PhaseSection from './Phases/PhaseSection';
 
 export interface JourneyPhase {
   title: string;
@@ -42,8 +42,8 @@ const JourneyTimeline: FC<JourneyTimelineProps> = ({
     <i key="scale" className="fas fa-chart-line" />
   ];
 
-  // Phase names
-  const phaseNames = ["Learn", "Build", "Prove", "Activate", "Scale"];
+  // Phase names with MFAI terminology
+  const phaseNames = ["Cognitive", "Synaptic", "Neural", "Activation", "Amplification"];
 
   const handlePhaseClick = (index: number) => {
     // Pour le prototype, toutes les phases sont accessibles sans restriction
@@ -97,12 +97,16 @@ const JourneyTimeline: FC<JourneyTimelineProps> = ({
           className="phase-content"
         >
           <PhaseSection
-            phase={phaseNames[selectedPhase] as "Learn" | "Build" | "Prove" | "Activate" | "Scale"}
+            phase={phaseNames[selectedPhase] as "Cognitive" | "Synaptic" | "Neural" | "Activation" | "Amplification"}
             description={journeyData[selectedPhase].description}
             mission={journeyData[selectedPhase].mission}
             nftReward={journeyData[selectedPhase].nftReward}
             xpReward={journeyData[selectedPhase].xpReward}
             locked={journeyData[selectedPhase].locked}
+            onNextPhase={() => handlePhaseClick(Math.min(selectedPhase + 1, journeyData.length - 1))}
+            onPrevPhase={() => handlePhaseClick(Math.max(selectedPhase - 1, 0))}
+            isFirstPhase={selectedPhase === 0}
+            isLastPhase={selectedPhase === journeyData.length - 1}
           />
         </motion.div>
       </AnimatePresence>

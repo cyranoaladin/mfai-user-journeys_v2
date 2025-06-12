@@ -3,6 +3,7 @@ import Head from 'next/head';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import WalletConnect from '../Wallet/WalletConnect';
+import AlertBanner from './AlertBanner';
 import { useStore } from '../../utils/store';
 
 interface MainLayoutProps {
@@ -36,6 +37,13 @@ const MainLayout: FC<MainLayoutProps> = ({
       </Head>
       
       <div className="min-h-screen flex flex-col bg-gray-900 text-white">
+        {/* Construction Alert Banner */}
+        <AlertBanner 
+          message="🚧 This platform is under construction. The journeys are examples for future Money Factory AI builders. Launch coming soon."
+          dismissible={false}
+          type="construction"
+        />
+        
         {/* Header */}
         <header className="bg-gray-800 border-b border-gray-700">
           <div className="container mx-auto px-4 py-4">

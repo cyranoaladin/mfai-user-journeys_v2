@@ -1,24 +1,49 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Money Factory AI - User Journeys
 
-## Getting Started
+Application Next.js pour les parcours utilisateurs de Money Factory AI, permettant aux utilisateurs de suivre des parcours d'apprentissage et d'obtenir des récompenses.
 
-First, run the development server:
+## Structure du projet
+
+Le projet suit une architecture modulaire avec une séparation claire des préoccupations :
+
+```
+components/
+├── Journey/
+│   ├── Header/       → Titre, sous-titre, types
+│   ├── Intro/        → Introduction du parcours
+│   ├── Sidebar/      → Profil, rôle, "Why It Matters"
+│   ├── Phases/       → Système de phases, navigation, feedback
+│   ├── Rewards/      → Section de preuve, badges
+│   ├── Zyno/         → Actions Zyno, simulateur
+│   ├── SkillchainMap.tsx
+│   └── XPTracker.tsx
+├── Layout/
+└── UI/              → badge, button, modal, progress, toast
+pages/
+├── index.tsx        → Page d'accueil
+└── journey/
+    └── [slug].tsx   → Page de détail d'un parcours
+journeys/            → Contenu Markdown des parcours
+types/               → Types TypeScript centralisés
+utils/
+├── journeyRegistry.ts → Registre des parcours et relations
+├── markdownParser.ts  → Parser pour le contenu Markdown
+└── types.ts          → Types utilitaires
+```
+
+## Démarrage
+
+Pour lancer le serveur de développement :
 
 ```bash
 npm run dev
-# or
+# ou
 yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Ouvrez [http://localhost:3000](http://localhost:3000) dans votre navigateur pour voir le résultat.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Vous pouvez commencer à éditer les pages en modifiant les fichiers dans le dossier `pages/`. Les pages se mettent à jour automatiquement lorsque vous modifiez les fichiers.
 
 ## Learn More
 

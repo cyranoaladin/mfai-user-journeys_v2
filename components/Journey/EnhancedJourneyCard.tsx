@@ -3,20 +3,68 @@ import { motion } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
+import { Clock, Users, Target, Award } from 'lucide-react';
 
 interface EnhancedJourneyCardProps {
+  /**
+   * Main title of the journey
+   */
   title: string;
+  /**
+   * Subtitle describing the journey transformation
+   */
   subtitle: string;
+  /**
+   * Short tagline or quote for the journey
+   */
   tagline: string;
+  /**
+   * Target audience for this journey
+   */
   target: string;
+  /**
+   * Type of profile this journey is designed for
+   */
   profileType: string;
+  /**
+   * Type of mission or activity in this journey
+   */
   missionType: string;
+  /**
+   * Emoji or icon representing the journey
+   */
   icon: string;
+  /**
+   * Array of proof names that can be earned
+   */
   proofs: string[];
+  /**
+   * URL slug for the journey
+   */
   slug: string;
+  /**
+   * Estimated completion time in minutes (optional)
+   */
+  estimatedTime?: number;
+  /**
+   * Language of the journey content (optional)
+   */
+  language?: 'EN' | 'FR' | 'AR';
 }
 
-const EnhancedJourneyCard: FC<EnhancedJourneyCardProps> = ({ title, subtitle, tagline, target, profileType, missionType, icon, proofs, slug }) => {
+const EnhancedJourneyCard: FC<EnhancedJourneyCardProps> = ({ 
+  title, 
+  subtitle, 
+  tagline, 
+  target, 
+  profileType, 
+  missionType, 
+  icon, 
+  proofs, 
+  slug,
+  estimatedTime,
+  language
+ }) => {
   const [isHovered, setIsHovered] = useState(false);
   const router = useRouter();
   
@@ -58,7 +106,9 @@ const EnhancedJourneyCard: FC<EnhancedJourneyCardProps> = ({ title, subtitle, ta
     }
   };
   
-  // Navigate to journey detail page
+  /**
+   * Navigate to journey detail page
+   */
   const handleClick = () => {
     // Normalize slug: convert to lowercase and replace underscores with hyphens
     const normalizedSlug = slug.toLowerCase().replace(/_/g, '-');
@@ -105,6 +155,15 @@ const EnhancedJourneyCard: FC<EnhancedJourneyCardProps> = ({ title, subtitle, ta
       onHoverEnd={() => setIsHovered(false)}
       variants={cardVariants}
       onClick={handleClick}
+      role="button"
+      tabIndex={0}
+      aria-label={`Explore ${title} journey`}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          handleClick();
+        }
+      }}
     >
       {/* Glow effect on hover */}
       <motion.div 
@@ -113,10 +172,21 @@ const EnhancedJourneyCard: FC<EnhancedJourneyCardProps> = ({ title, subtitle, ta
       />
       
       <div className="p-6 h-full flex flex-col">
+        {/* Language badge (if specified) */}
+        {language && (
+          <div className="absolute top-3 right-3">
+            <span className="text-xs font-medium px-2 py-1 rounded-full bg-gray-800/80 text-gray-300">
+              {language}
+            </span>
+          </div>
+        )}
+        
         {/* Card header */}
         <motion.div variants={contentVariants} className="mb-4">
           <div className="flex items-center gap-3 mb-2">
-            <span className="text-3xl">{icon}</span>
+            <div className="w-12 h-12 flex items-center justify-center rounded-lg bg-gradient-to-br from-blue-600/30 to-purple-600/30 backdrop-blur-sm">
+              <span className="text-3xl" role="img" aria-label="Journey icon">{icon}</span>
+            </div>
             <div>
               <h3 className="text-xl font-bold text-white">{title}</h3>
               <p className="text-sm text-gray-300">{subtitle}</p>
@@ -130,17 +200,29 @@ const EnhancedJourneyCard: FC<EnhancedJourneyCardProps> = ({ title, subtitle, ta
         
         {/* Card content */}
         <motion.div variants={contentVariants} className="flex-grow">
-          <div className="flex items-center gap-2 mb-3">
-            <span className="text-xs font-medium px-2 py-1 rounded-full bg-gray-800 text-gray-300">
+          {/* Tags row */}
+          <div className="flex flex-wrap items-center gap-2 mb-3">
+            <span className="text-xs font-medium px-2 py-1 rounded-full bg-gray-800 text-gray-300 flex items-center gap-1">
+              <Users size={12} />
               {target}
             </span>
-            <span className="text-xs font-medium px-2 py-1 rounded-full bg-purple-900/50 text-purple-300">
+            <span className="text-xs font-medium px-2 py-1 rounded-full bg-purple-900/50 text-purple-300 flex items-center gap-1">
+              <Target size={12} />
               {profileType}
             </span>
-            <span className="text-xs font-medium px-2 py-1 rounded-full bg-blue-900/50 text-blue-300">
+            <span className="text-xs font-medium px-2 py-1 rounded-full bg-blue-900/50 text-blue-300 flex items-center gap-1">
+              <Award size={12} />
               {missionType}
             </span>
           </div>
+          
+          {/* Estimated time (if provided) */}
+          {estimatedTime && (
+            <div className="flex items-center gap-1 text-xs text-gray-400 mb-2">
+              <Clock size={12} />
+              <span>Est. {estimatedTime} min</span>
+            </div>
+          )}
         </motion.div>
         
         {/* Preview badges on hover */}
@@ -151,8 +233,10 @@ const EnhancedJourneyCard: FC<EnhancedJourneyCardProps> = ({ title, subtitle, ta
               <div 
                 key={index} 
                 className="w-12 h-12 rounded-full bg-gray-800 p-1 flex items-center justify-center"
+                aria-label={`Protocol Proof: ${proof}`}
+                title={proof}
               >
-                <div className="w-10 h-10 rounded-full bg-blue-900 flex items-center justify-center text-sm">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-700 to-purple-700 flex items-center justify-center text-sm shadow-lg shadow-blue-900/30">
                   {index === 0 ? '🏆' : index === 1 ? '🔍' : '🧠'}
                 </div>
               </div>
@@ -164,7 +248,8 @@ const EnhancedJourneyCard: FC<EnhancedJourneyCardProps> = ({ title, subtitle, ta
         <motion.div variants={badgeVariants} className="mt-4">
           <Link 
             href={`/journey/${slug.toLowerCase().replace(/_/g, '-')}`}
-            className="block w-full text-center py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+            className="block w-full text-center py-2 px-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-lg transition-all shadow-lg shadow-blue-900/30 font-medium"
+            aria-label={`Explore ${title} journey details`}
           >
             Explore this journey
           </Link>

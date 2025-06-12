@@ -3,11 +3,13 @@ import { motion } from 'framer-motion';
 import Image from 'next/image';
 import { Award, Check, Lock } from 'lucide-react';
 
-interface NFTBadgeProps {
+interface RewardBadgeProps {
   title: string;
+  description?: string;
   imageUrl: string;
-  claimed: boolean;
+  claimed?: boolean;
   onClaim?: () => void;
+  className?: string;
 }
 
 /**
@@ -19,7 +21,7 @@ interface NFTBadgeProps {
  * - Tooltip with NFT metadata
  * - Connect to wallet if unclaimed
  */
-const NFTBadge: FC<NFTBadgeProps> = ({ title, imageUrl, claimed, onClaim }) => {
+const RewardBadge: FC<RewardBadgeProps> = ({ title, imageUrl, claimed, onClaim }) => {
   return (
     <motion.div 
       className="nft-badge relative"
@@ -94,4 +96,4 @@ const NFTBadge: FC<NFTBadgeProps> = ({ title, imageUrl, claimed, onClaim }) => {
   );
 };
 
-export default NFTBadge;
+export default RewardBadge;

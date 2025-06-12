@@ -12,35 +12,34 @@ if (typeof window === 'undefined') {
   path = require('path');
 }
 
-// Define the journey metadata structure
-export interface JourneyMetadata {
+// Import centralized types
+import { JourneyMetadata, JourneyPhase, JourneyReward, JourneyContent } from '../types/journey';
+
+// Re-export types for backward compatibility
+export type { JourneyMetadata, JourneyPhase, JourneyReward, JourneyContent };
+
+// Define fallback interfaces for backward compatibility
+interface JourneyPhaseMinimal {
+  name: string;
   title: string;
-  subtitle: string;
-  tagline: string;
-  target: string;
-  profileType: string;
-  missionType: string;
-  icon?: string;
-  slug: string;
+  content: string;
+  icon: string;
 }
 
-// Define the journey content structure
-export interface JourneyContent {
-  metadata: JourneyMetadata;
-  phases: {
-    name: string;
-    title: string;
-    content: string;
-    icon: string;
-  }[];
-  rewards: {
-    milestone: string;
-    proof: string;
-    utility: string;
-  }[];
-  whyItMatters: string;
-  finalRole: string;
-  callToAction: string[];
+interface JourneyRewardMinimal {
+  milestone: string;
+  proof: string;
+  utility: string;
+}
+
+// Helper function to convert minimal phase to full phase
+export function enrichPhase(phase: JourneyPhaseMinimal): JourneyPhase {
+  return {
+    ...phase,
+    description: phase.content.substring(0, 100) + '...',  // Default description from content
+    mission: 'Complete this phase',  // Default mission
+    xpReward: 100,  // Default XP reward
+  };
 }
 
 // Parse a markdown file and extract structured content
@@ -157,7 +156,8 @@ export async function parseJourneyMarkdown(filePath: string): Promise<JourneyCon
   // Extract slug from filename
   const slug = path.basename(filePath, '.md');
 
-  return {
+  // Créer un objet JourneyContent compatible avec notre interface centralisée
+  const journeyContent: JourneyContent = {
     metadata: {
       title: titleMatch ? titleMatch[1].trim() : '',
       subtitle: subtitleMatch ? `From ${subtitleMatch[1].trim()}` : '',
@@ -166,14 +166,18 @@ export async function parseJourneyMarkdown(filePath: string): Promise<JourneyCon
       profileType,
       missionType,
       icon: iconMap[profileType],
-      slug
+      slug,
+      description: taglineMatch ? taglineMatch[1].trim() : 'Journey description' // Ajout du champ description requis
     },
-    phases,
+    // Enrichir les phases avec les champs requis par JourneyPhase
+    phases: phases.map(phase => enrichPhase(phase)),
     rewards,
     whyItMatters,
     finalRole,
     callToAction
   };
+  
+  return journeyContent;
 }
 
 // Get all journey files
