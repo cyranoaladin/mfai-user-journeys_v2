@@ -1,45 +1,44 @@
 import { useState, FC, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { getAllJourneys } from '@/utils/markdownParser';
+import { getAllJourneys, Journey } from '@/utils/journeyData';
 import EnhancedJourneyCard from '@/components/Journey/EnhancedJourneyCard';
 import JourneyFilters, { FilterOption } from '@/components/Journey/JourneyFilters';
 import { useStore } from '@/utils/store';
-import { JourneyContent } from '@/utils/markdownParser';
 import { GetStaticProps } from 'next';
+import { useRouter } from 'next/router';
+import { Brain, Sparkles, Zap, BookOpen } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
-/**
- * Journeys Page - Entry point showing all available user journeys
- *
- * Features:
- * - Displays all persona journey cards in a responsive grid
- * - Dynamic filtering by profile type and mission type
- * - Animated entrance with Framer Motion
- * - Zyno welcome message
- * - Wallet connection status
- */
 interface JourneysPageProps {
-  journeyData: JourneyContent[];
+  journeyData: Journey[];
 }
 
 const JourneysPage: FC<JourneysPageProps> = ({ journeyData }) => {
-  const { walletConnected, walletAddress } = useStore();
-  const [filteredJourneys, setFilteredJourneys] = useState<JourneyContent[]>(journeyData);
+  const router = useRouter();
+  const { walletConnected, walletAddress, selectPersona } = useStore();
+  const [filteredJourneys, setFilteredJourneys] = useState<Journey[]>(journeyData);
   const [selectedProfileType, setSelectedProfileType] = useState<string | null>(null);
   const [selectedMissionType, setSelectedMissionType] = useState<string | null>(null);
 
-  // Define available profile and mission types
+  // Define available profile and mission types based on actual data
   const profileTypes: FilterOption[] = [
-    { id: 'creator', label: 'Creator', icon: '🎨' },
-    { id: 'investor', label: 'Investor', icon: '💰' },
-    { id: 'builder', label: 'Builder', icon: '🛠️' },
-    { id: 'analyst', label: 'Analyst', icon: '📊' },
+    { id: 'Entrepreneur', label: 'Entrepreneur', icon: '🚀' },
+    { id: 'Strategist', label: 'Strategist', icon: '🧠' },
+    { id: 'Creator', label: 'Creator', icon: '🎨' },
+    { id: 'Researcher', label: 'Researcher', icon: '🔍' },
+    { id: 'Operator', label: 'Operator', icon: '⚙️' },
+    { id: 'Builder', label: 'Builder', icon: '🛠️' },
+    { id: 'Investor', label: 'Investor', icon: '💰' },
   ];
 
   const missionTypes: FilterOption[] = [
-    { id: 'learn', label: 'Learn' },
-    { id: 'earn', label: 'Earn' },
-    { id: 'build', label: 'Build' },
-    { id: 'connect', label: 'Connect' },
+    { id: 'Transform', label: 'Transform', icon: '🔄' },
+    { id: 'Coordinate', label: 'Coordinate', icon: '🤝' },
+    { id: 'Create', label: 'Create', icon: '✨' },
+    { id: 'Analyze', label: 'Analyze', icon: '📊' },
+    { id: 'Orchestrate', label: 'Orchestrate', icon: '🎭' },
+    { id: 'Engineer', label: 'Engineer', icon: '⚡' },
+    { id: 'Back', label: 'Back', icon: '💎' },
   ];
 
   // Filter journeys based on selected filters
@@ -48,15 +47,13 @@ const JourneysPage: FC<JourneysPageProps> = ({ journeyData }) => {
 
     if (selectedProfileType) {
       filtered = filtered.filter(journey =>
-        journey.metadata.profileType.toLowerCase().includes(selectedProfileType.toLowerCase())
+        journey.profileType === selectedProfileType
       );
     }
 
     if (selectedMissionType) {
-      filtered = filtered.filter(
-        journey =>
-          journey.metadata.missionType?.toLowerCase().includes(selectedMissionType.toLowerCase()) ??
-          false
+      filtered = filtered.filter(journey =>
+        journey.missionType === selectedMissionType
       );
     }
 
@@ -69,24 +66,26 @@ const JourneysPage: FC<JourneysPageProps> = ({ journeyData }) => {
   }, [filterJourneys]);
 
   // Handle filter changes
-  const handleProfileTypeChange = (profileType: string) => {
-    setSelectedProfileType(prevType => {
-      const newType = prevType === profileType ? null : profileType;
-      return newType;
-    });
+  const handleProfileTypeChange = (profileType: string | null) => {
+    setSelectedProfileType(profileType);
   };
 
-  const handleMissionTypeChange = (missionType: string) => {
-    setSelectedMissionType(prevType => {
-      const newType = prevType === missionType ? null : missionType;
-      return newType;
-    });
+  const handleMissionTypeChange = (missionType: string | null) => {
+    setSelectedMissionType(missionType);
   };
 
   const handleClearFilters = () => {
     setSelectedProfileType(null);
     setSelectedMissionType(null);
-    setFilteredJourneys(journeyData);
+  };
+
+  // Handle journey selection
+  const handleJourneySelect = (slug: string) => {
+    const journey = journeyData.find(j => j.slug === slug);
+    if (journey) {
+      selectPersona(journey.persona);
+      router.push(`/journey/${slug}`);
+    }
   };
 
   // Animation variants
@@ -110,40 +109,102 @@ const JourneysPage: FC<JourneysPageProps> = ({ journeyData }) => {
   };
 
   return (
-    <div className="journeys-page bg-gray-900 min-h-screen text-white p-6 md:p-10">
-      <div className="container mx-auto">
-        <motion.header
-          className="mb-10"
-          variants={containerVariants}
-          initial="hidden"
-          animate="visible"
-        >
-          <motion.h1
-            className="text-4xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent mb-4"
-            variants={itemVariants}
+    <div className="min-h-screen bg-gradient-to-b from-black via-gray-950 to-black text-white">
+      {/* Hero Section */}
+      <div className="relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-r from-[#9945FF]/20 to-[#14F195]/20 blur-3xl" />
+        <div className="relative container mx-auto px-6 py-16">
+          <motion.div
+            className="text-center mb-12"
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
           >
-            Money Factory AI Journeys
-          </motion.h1>
-          <motion.p className="text-gray-300 max-w-2xl" variants={itemVariants}>
-            Discover your path through our AI-augmented entrepreneurship protocols. Each journey
-            represents a unique way to engage with our platform and earn Protocol Proofs™.
-          </motion.p>
-
-          {/* Wallet Status */}
-          <motion.div className="mt-6" variants={itemVariants}>
-            <div
-              className={`inline-flex items-center px-4 py-2 rounded-full text-sm ${walletConnected ? 'bg-green-900 text-green-300' : 'bg-gray-800 text-gray-300'}`}
+            <motion.div
+              className="inline-flex items-center gap-2 mb-6"
+              variants={itemVariants}
             >
-              <div
-                className={`w-2 h-2 rounded-full mr-2 ${walletConnected ? 'bg-green-400' : 'bg-gray-500'}`}
-              ></div>
-              {walletConnected
-                ? `Connected: ${walletAddress?.substring(0, 6)}...${walletAddress?.substring(walletAddress?.length - 4)}`
-                : 'Wallet Not Connected'}
-            </div>
-          </motion.div>
-        </motion.header>
+              <Brain className="w-8 h-8 text-[#14F195]" />
+              <span className="text-[#14F195] font-medium">Cognitive Activation Protocol™</span>
+            </motion.div>
+            
+            <motion.h1
+              className="text-5xl md:text-6xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-[#9945FF] to-[#14F195]"
+              variants={itemVariants}
+            >
+              Choose Your Journey
+            </motion.h1>
+            
+            <motion.p 
+              className="text-xl text-gray-300 max-w-3xl mx-auto mb-8"
+              variants={itemVariants}
+            >
+              Discover your path through our AI-augmented entrepreneurship protocols. Each journey represents a unique way to engage with our platform and earn Protocol Proofs™.
+            </motion.p>
 
+            {/* Protocol Features */}
+            <motion.div 
+              className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto mb-8"
+              variants={containerVariants}
+            >
+              <motion.div 
+                className="flex items-center gap-3 p-4 rounded-xl bg-black/30 border border-[#14F195]/20"
+                variants={itemVariants}
+              >
+                <Sparkles className="w-6 h-6 text-[#14F195]" />
+                <div className="text-left">
+                  <div className="font-semibold">Skillchain Mining™</div>
+                  <div className="text-sm text-gray-400">Extract cognitive value</div>
+                </div>
+              </motion.div>
+              
+              <motion.div 
+                className="flex items-center gap-3 p-4 rounded-xl bg-black/30 border border-[#9945FF]/20"
+                variants={itemVariants}
+              >
+                <Zap className="w-6 h-6 text-[#9945FF]" />
+                <div className="text-left">
+                  <div className="font-semibold">Proof-of-Skill™ NFTs</div>
+                  <div className="text-sm text-gray-400">On-chain credentials</div>
+                </div>
+              </motion.div>
+              
+              <motion.div 
+                className="flex items-center gap-3 p-4 rounded-xl bg-black/30 border border-[#14F195]/20"
+                variants={itemVariants}
+              >
+                <BookOpen className="w-6 h-6 text-[#14F195]" />
+                <div className="text-left">
+                  <div className="font-semibold">Zyno AI Co-Founder™</div>
+                  <div className="text-sm text-gray-400">Your strategic guide</div>
+                </div>
+              </motion.div>
+            </motion.div>
+
+            {/* Wallet Status */}
+            <motion.div className="mb-8" variants={itemVariants}>
+              <div
+                className={`inline-flex items-center px-6 py-3 rounded-full text-sm font-medium ${
+                  walletConnected 
+                    ? 'bg-green-900/30 text-green-300 border border-green-500/30' 
+                    : 'bg-gray-800/50 text-gray-300 border border-gray-700'
+                }`}
+              >
+                <div
+                  className={`w-2 h-2 rounded-full mr-3 ${
+                    walletConnected ? 'bg-green-400' : 'bg-gray-500'
+                  }`}
+                />
+                {walletConnected
+                  ? `Connected: ${walletAddress?.substring(0, 6)}...${walletAddress?.substring(walletAddress?.length - 4)}`
+                  : 'Wallet Not Connected - Full Preview Mode'}
+              </div>
+            </motion.div>
+          </motion.div>
+        </div>
+      </div>
+
+      <div className="container mx-auto px-6 pb-16">
         {/* Journey Filters */}
         <motion.div
           className="mb-8"
@@ -156,8 +217,8 @@ const JourneysPage: FC<JourneysPageProps> = ({ journeyData }) => {
             missionTypes={missionTypes}
             selectedProfileType={selectedProfileType}
             selectedMissionType={selectedMissionType}
-            onProfileTypeChange={type => handleProfileTypeChange(type || '')}
-            onMissionTypeChange={type => handleMissionTypeChange(type || '')}
+            onProfileTypeChange={handleProfileTypeChange}
+            onMissionTypeChange={handleMissionTypeChange}
             onClearFilters={handleClearFilters}
           />
         </motion.div>
@@ -165,7 +226,7 @@ const JourneysPage: FC<JourneysPageProps> = ({ journeyData }) => {
         {/* Filtered Results Count */}
         {(selectedProfileType || selectedMissionType) && (
           <motion.div
-            className="mb-6 text-gray-300"
+            className="mb-6 text-gray-300 text-center"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.3 }}
@@ -181,42 +242,76 @@ const JourneysPage: FC<JourneysPageProps> = ({ journeyData }) => {
         {/* Empty State */}
         {filteredJourneys.length === 0 && (
           <motion.div
-            className="col-span-full text-center py-10"
+            className="text-center py-16"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.5 }}
           >
-            <p className="text-gray-400 mb-4">No journeys match your selected filters.</p>
-            <button
-              className="px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-md text-white transition-colors"
+            <div className="text-6xl mb-4">🔍</div>
+            <h3 className="text-2xl font-semibold text-white mb-4">No journeys match your filters</h3>
+            <p className="text-gray-400 mb-6">Try adjusting your search criteria or explore all available journeys.</p>
+            <Button
               onClick={handleClearFilters}
+              className="bg-gradient-to-r from-[#9945FF] to-[#14F195] text-black font-semibold"
             >
-              Clear Filters
-            </button>
+              Clear All Filters
+            </Button>
           </motion.div>
         )}
 
         {/* Journey Grid */}
         {filteredJourneys.length > 0 && (
           <motion.div
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
             variants={containerVariants}
             initial="hidden"
             animate="visible"
           >
-            {filteredJourneys.map(journey => (
-              <motion.div key={journey.metadata.title} variants={itemVariants}>
+            {filteredJourneys.map((journey, index) => (
+              <motion.div 
+                key={journey.persona} 
+                variants={itemVariants}
+                custom={index}
+              >
                 <EnhancedJourneyCard
                   journey={journey}
-                  onSelect={slug => {
-                    // Handle journey selection
-                    console.log('Selected journey:', slug);
-                  }}
+                  onSelect={handleJourneySelect}
                 />
               </motion.div>
             ))}
           </motion.div>
         )}
+
+        {/* Call to Action */}
+        <motion.div
+          className="mt-16 text-center"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.8 }}
+        >
+          <div className="p-8 rounded-2xl bg-gradient-to-r from-[#9945FF]/10 to-[#14F195]/10 border border-[#14F195]/20">
+            <h3 className="text-2xl font-bold text-white mb-4">Ready to Begin Your Cognitive Activation?</h3>
+            <p className="text-gray-300 mb-6 max-w-2xl mx-auto">
+              Each journey is designed to transform your skills into verifiable on-chain assets. 
+              Start with any persona and evolve through the 5-phase Cognitive Activation Protocol™.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Button
+                onClick={() => router.push('/journey/from-web2-hustler-to-web3-sovereign')}
+                className="bg-gradient-to-r from-[#9945FF] to-[#14F195] text-black font-semibold px-8 py-3"
+              >
+                Start with Web2 Hustler
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => router.push('/zyno-preview')}
+                className="border-[#14F195]/30 text-[#14F195] hover:bg-[#14F195]/10 px-8 py-3"
+              >
+                Preview Zyno AI
+              </Button>
+            </div>
+          </div>
+        </motion.div>
       </div>
     </div>
   );
@@ -224,33 +319,13 @@ const JourneysPage: FC<JourneysPageProps> = ({ journeyData }) => {
 
 export const getStaticProps: GetStaticProps = async () => {
   try {
-    const journeyData = await getAllJourneys();
-
-    // Validate journey data
-    const validatedJourneyData = journeyData.filter(
-      journey =>
-        journey &&
-        journey.metadata &&
-        journey.metadata.title &&
-        journey.metadata.profileType &&
-        journey.metadata.missionType
-    );
-
-    if (validatedJourneyData.length === 0) {
-      console.warn('No valid journey data found');
-      return {
-        props: {
-          journeyData: [],
-        },
-        revalidate: 60,
-      };
-    }
+    const journeyData = getAllJourneys();
 
     return {
       props: {
-        journeyData: validatedJourneyData,
+        journeyData,
       },
-      revalidate: 60,
+      revalidate: 3600, // Revalidate every hour
     };
   } catch (error) {
     console.error('Error fetching journey data:', error);
