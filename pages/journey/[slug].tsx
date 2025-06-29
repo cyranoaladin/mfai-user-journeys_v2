@@ -2,7 +2,7 @@ import { useWallet } from '@solana/wallet-adapter-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 // Layout and core components
 import PhaseSection from '@/components/Journey/Phases/PhaseSection';
@@ -31,21 +31,24 @@ import { useToast } from '@/hooks/use-toast';
 import { AchievementNotification } from '../../components/Journey/AchievementNotification/AchievementNotification';
 
 // Data and utilities
-import { getJourneyByPersona } from '@/utils/journeyData';
+import { getJourneyByPersona, getAllJourneys, Journey } from '@/utils/journeyData';
+import { GetStaticPaths, GetStaticProps } from 'next';
+import { Button } from '@/components/ui/button';
+import { ChevronLeft, ChevronRight, Brain, Award, Zap } from 'lucide-react';
 
-// Types
-import type { Journey, JourneyPhase } from '@/utils/journeyData';
+interface JourneyPageProps {
+  journey: Journey | null;
+}
 
-export default function JourneyPage() {
+export default function JourneyPage({ journey: initialJourney }: JourneyPageProps) {
   const router = useRouter();
   const { slug } = router.query;
   const { publicKey } = useWallet();
   const { toast } = useToast();
-  const contentRef = useRef<HTMLDivElement>(null);
   const [isZynoModalOpen, setIsZynoModalOpen] = useState(false);
 
   // États liés aux phases
-  const [journeyData, setJourneyData] = useState<Journey | null>(null);
+  const [journey, setJourney] = useState<Journey | null>(initialJourney);
   const [currentPhaseIndex, setCurrentPhaseIndex] = useState(0);
 
   // États liés aux preuves
@@ -70,9 +73,9 @@ export default function JourneyPage() {
   const { triggerUpdate } = usePhaseForceUpdate();
 
   // Calculs mémoïsés
-  const phases = useMemo<JourneyPhase[]>(() => {
-    return journeyData?.phases || [];
-  }, [journeyData]);
+  const phases = useMemo(() => {
+    return journey?.phases || [];
+  }, [journey]);
 
   const safePhaseIndex = useMemo(() => {
     return Math.min(currentPhaseIndex, phases.length - 1 >= 0 ? phases.length - 1 : 0);
@@ -84,27 +87,27 @@ export default function JourneyPage() {
 
   // Callbacks
   const handleNextPhase = useCallback(() => {
-    if (!journeyData) return;
-    if (currentPhaseIndex < journeyData.phases.length - 1) {
+    if (!journey) return;
+    if (currentPhaseIndex < journey.phases.length - 1) {
       setCurrentPhaseIndex(prev => prev + 1);
       setAchievementNotification({
-        title: 'Nouvelle phase débloquée !',
-        description: `Vous avez débloqué la phase ${currentPhaseIndex + 2}`,
+        title: 'Phase Completed! 🎉',
+        description: `You've unlocked ${journey.phases[currentPhaseIndex + 1]?.title}`,
         isVisible: true,
       });
       toast({
-        title: 'Phase débloquée !',
-        description: `Vous avez accès à la phase ${currentPhaseIndex + 2}`,
+        title: 'Phase Unlocked!',
+        description: `You now have access to ${journey.phases[currentPhaseIndex + 1]?.title}`,
       });
     }
-  }, [currentPhaseIndex, journeyData, toast]);
+  }, [currentPhaseIndex, journey, toast]);
 
   const handlePreviousPhase = useCallback(() => {
-    if (canNavigate('prev')) {
-      goToPreviousPhase();
+    if (currentPhaseIndex > 0) {
+      setCurrentPhaseIndex(prev => prev - 1);
       triggerUpdate();
     }
-  }, [canNavigate, goToPreviousPhase, triggerUpdate]);
+  }, [currentPhaseIndex, triggerUpdate]);
 
   // Keyboard navigation
   useKeyboardNavigation({
@@ -115,13 +118,9 @@ export default function JourneyPage() {
 
   // Effects
   useEffect(() => {
-    if (!slug) return;
-
-    const data = getJourneyByPersona(slug as string);
-    if (data) {
-      setJourneyData(data as Journey);
-    }
-  }, [slug]);
+    if (!slug || !initialJourney) return;
+    setJourney(initialJourney);
+  }, [slug, initialJourney]);
 
   useEffect(() => {
     if (currentPhaseIndex !== undefined) {
@@ -149,41 +148,28 @@ export default function JourneyPage() {
     }
   }, [currentPhaseIndex, phases.length]);
 
-  useEffect(() => {
-    if (contentRef.current) {
-      contentRef.current.scrollIntoView({
-        behavior: 'smooth',
-        block: 'start',
-      });
-    }
-  }, [currentPhaseIndex]);
-
-  // Log de débogage pour suivre les changements de phase
-  useEffect(() => {
-    console.log('Phase changed', currentPhaseIndex, currentPhase);
-  }, [currentPhaseIndex, currentPhase]);
-
   // Construction de l'objet metadata
   const metadata = {
-    title: journeyData?.label || '',
-    subtitle: '',
-    tagline: journeyData?.tagline || '',
-    target: '',
-    profileType: '',
-    missionType: '',
-    icon: journeyData?.icon || '',
-    slug: journeyData?.persona || '',
-    description: journeyData?.description || '',
+    title: journey?.label || '',
+    subtitle: journey?.tagline || '',
+    tagline: journey?.tagline || '',
+    target: journey?.profileType || '',
+    profileType: journey?.profileType || '',
+    missionType: journey?.missionType || '',
+    icon: journey?.icon || '',
+    slug: journey?.slug || '',
+    description: journey?.description || '',
   };
 
   // Rendu conditionnel
-  if (router.isFallback || !journeyData) {
+  if (router.isFallback || !journey) {
     return (
       <MainLayout>
-        <div className="min-h-screen bg-gray-900 text-white flex items-center justify-center">
+        <div className="min-h-screen bg-gradient-to-b from-black via-gray-950 to-black text-white flex items-center justify-center">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500 mx-auto mb-4"></div>
-            <h2 className="text-xl font-bold">Loading journey...</h2>
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#14F195] mx-auto mb-4"></div>
+            <h2 className="text-xl font-bold">Loading your Cognitive Journey...</h2>
+            <p className="text-gray-400 mt-2">Zyno is preparing your personalized experience</p>
           </div>
         </div>
       </MainLayout>
@@ -206,78 +192,241 @@ export default function JourneyPage() {
     <MainLayout>
       <Head>
         <title>{`${metadata.title || 'Journey'} | Money Factory AI`}</title>
-        <meta name="description" content={metadata.description || 'Journey details'} />
+        <meta name="description" content={metadata.description || 'Cognitive Activation Journey'} />
       </Head>
 
-      <div className="container mx-auto px-4 py-8">
-        {/* Journey Header */}
-        <div className="mb-8 flex flex-col md:flex-row justify-between items-start gap-6">
-          <JourneyHeader journey={{ title: metadata.title, description: metadata.description }} />
-          <WalletConnect />
-        </div>
+      <div className="min-h-screen bg-gradient-to-b from-black via-gray-950 to-black text-white">
+        {/* Hero Section */}
+        <div className="relative overflow-hidden border-b border-gray-800">
+          <div className="absolute inset-0 bg-gradient-to-r from-[#9945FF]/20 to-[#14F195]/20 blur-3xl" />
+          <div className="relative container mx-auto px-6 py-12">
+            <div className="flex flex-col lg:flex-row items-start gap-8">
+              {/* Journey Info */}
+              <div className="flex-1">
+                <div className="flex items-center gap-4 mb-6">
+                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#9945FF] to-[#14F195] flex items-center justify-center text-3xl shadow-lg">
+                    {journey.icon}
+                  </div>
+                  <div>
+                    <h1 className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-[#9945FF] to-[#14F195]">
+                      {journey.label}
+                    </h1>
+                    <p className="text-xl text-gray-300 mt-2">{journey.tagline}</p>
+                  </div>
+                </div>
+                
+                <p className="text-gray-300 text-lg mb-6 max-w-3xl">
+                  {journey.description}
+                </p>
 
-        {/* Global Progress Bar */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium text-gray-700">Progression globale</span>
-            <span className="text-sm font-medium text-gray-700">
-              {Math.round(progressPercentage)}%
-            </span>
+                {/* Journey Stats */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                  <div className="p-4 rounded-xl bg-black/30 border border-[#14F195]/20">
+                    <div className="text-2xl font-bold text-[#14F195]">{journey.phases.length}</div>
+                    <div className="text-sm text-gray-400">Phases</div>
+                  </div>
+                  <div className="p-4 rounded-xl bg-black/30 border border-[#9945FF]/20">
+                    <div className="text-2xl font-bold text-[#9945FF]">{journey.phases.reduce((sum, p) => sum + p.xpReward, 0)}</div>
+                    <div className="text-sm text-gray-400">Total XP</div>
+                  </div>
+                  <div className="p-4 rounded-xl bg-black/30 border border-purple-500/20">
+                    <div className="text-2xl font-bold text-purple-400">{journey.requiredPass}</div>
+                    <div className="text-sm text-gray-400">Pass Required</div>
+                  </div>
+                  <div className="p-4 rounded-xl bg-black/30 border border-green-500/20">
+                    <div className="text-2xl font-bold text-green-400">{Math.round(progressPercentage)}%</div>
+                    <div className="text-sm text-gray-400">Progress</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Wallet Connection */}
+              <div className="lg:w-auto">
+                <WalletConnect />
+              </div>
+            </div>
+
+            {/* Global Progress Bar */}
+            <div className="mt-8">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-sm font-medium text-gray-300 flex items-center gap-2">
+                  <Brain className="w-4 h-4 text-[#14F195]" />
+                  Cognitive Activation Progress
+                </span>
+                <span className="text-sm font-medium text-white">
+                  {Math.round(progressPercentage)}%
+                </span>
+              </div>
+              <Progress value={progressPercentage} className="h-3" />
+            </div>
           </div>
-          <Progress value={progressPercentage} className="h-2" />
         </div>
 
         {/* Main Content */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          {/* Sidebar */}
-          <div className="lg:col-span-3">
-            <JourneySidebar
-              metadata={metadata}
-              phases={phases}
-              currentPhase={currentPhaseIndex}
-              onPhaseClick={setCurrentPhaseIndex}
-              onOpenZynoModal={handleZynoClick}
-              onNotifyClick={() => {}}
-              mfaiBalance={'0'}
-            />
-          </div>
+        <div className="container mx-auto px-6 py-8">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            {/* Sidebar */}
+            <div className="lg:col-span-4">
+              <JourneySidebar
+                metadata={metadata}
+                phases={phases}
+                currentPhase={currentPhaseIndex}
+                onPhaseClick={setCurrentPhaseIndex}
+                onOpenZynoModal={handleZynoClick}
+                onNotifyClick={() => {
+                  toast({
+                    title: 'Notifications Enabled',
+                    description: 'You\'ll be notified when the protocol activates',
+                  });
+                }}
+                mfaiBalance={'1,250'}
+              />
+            </div>
 
-          {/* Main Content Area */}
-          <div className="lg:col-span-9">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={currentPhaseIndex}
-                initial="hidden"
-                animate="visible"
-                exit="exit"
-                variants={contentVariants}
-                className="space-y-8"
-              >
-                {/* Phase Content */}
-                <PhaseSection
-                  phase={currentPhase}
-                  currentPhase={currentPhaseIndex}
-                  totalPhases={phases.length}
-                />
+            {/* Main Content Area */}
+            <div className="lg:col-span-8">
+              {/* Phase Navigation */}
+              <div className="flex items-center justify-between mb-6 p-4 rounded-xl bg-black/30 border border-gray-800">
+                <Button
+                  onClick={handlePreviousPhase}
+                  disabled={currentPhaseIndex === 0}
+                  variant="outline"
+                  className="flex items-center gap-2"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                  Previous
+                </Button>
 
-                {/* Phase Feedback */}
-                <div className="flex items-center space-x-2">
-                  <span className="text-sm text-gray-500">Phase</span>
-                  <span className="text-sm font-medium text-gray-900">{currentPhaseIndex + 1}</span>
-                  <span className="text-sm text-gray-500">sur</span>
-                  <span className="text-sm font-medium text-gray-900">
-                    {journeyData?.phases.length ?? '0'}
-                  </span>
+                <div className="text-center">
+                  <div className="text-sm text-gray-400">Phase {currentPhaseIndex + 1} of {phases.length}</div>
+                  <div className="font-semibold text-white">{currentPhase?.title}</div>
                 </div>
-                <PhaseFeedback phaseId={`phase-${currentPhaseIndex}`} />
 
-                {/* Why It Matters Section */}
-                <WhyItMatters content={journeyData.whyItMatters} />
+                <Button
+                  onClick={handleNextPhase}
+                  disabled={currentPhaseIndex === phases.length - 1}
+                  variant="outline"
+                  className="flex items-center gap-2"
+                >
+                  Next
+                  <ChevronRight className="w-4 h-4" />
+                </Button>
+              </div>
 
-                {/* Final Role Section */}
-                <FinalRoleSection content={journeyData.finalRole} />
-              </motion.div>
-            </AnimatePresence>
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={currentPhaseIndex}
+                  initial="hidden"
+                  animate="visible"
+                  exit="exit"
+                  variants={contentVariants}
+                  className="space-y-8"
+                >
+                  {/* Current Phase Content */}
+                  <div className="relative p-8 rounded-2xl bg-black/50 border border-[#14F195]/20 backdrop-blur-sm">
+                    <div className="absolute inset-0 bg-gradient-to-r from-[#9945FF]/5 to-[#14F195]/5 rounded-2xl" />
+                    
+                    <div className="relative z-10">
+                      {/* Phase Header */}
+                      <div className="flex items-start justify-between mb-6">
+                        <div>
+                          <div className="flex items-center gap-3 mb-3">
+                            <div className="text-3xl">{currentPhase?.icon}</div>
+                            <div>
+                              <h2 className="text-3xl font-bold text-white">{currentPhase?.title}</h2>
+                              <p className="text-[#14F195] font-medium">{currentPhase?.name}</p>
+                            </div>
+                          </div>
+                          <p className="text-gray-300 text-lg">{currentPhase?.description}</p>
+                        </div>
+                        
+                        <div className="text-right">
+                          <div className="text-2xl font-bold text-[#14F195]">+{currentPhase?.xpReward} XP</div>
+                          <div className="text-sm text-gray-400">Reward</div>
+                        </div>
+                      </div>
+
+                      {/* Mission Card */}
+                      <div className="bg-gray-800/50 rounded-xl p-6 border border-gray-700/50 mb-6">
+                        <h3 className="text-xl font-semibold text-white mb-3 flex items-center gap-2">
+                          <Award className="w-5 h-5 text-yellow-400" />
+                          Mission Objective
+                        </h3>
+                        <p className="text-gray-300 mb-4">{currentPhase?.mission}</p>
+                        
+                        {currentPhase?.requirements && currentPhase.requirements.length > 0 && (
+                          <div className="mb-4">
+                            <h4 className="text-sm font-medium text-gray-400 mb-2">Requirements:</h4>
+                            <ul className="space-y-1">
+                              {currentPhase.requirements.map((req, index) => (
+                                <li key={index} className="text-sm text-gray-300 flex items-center gap-2">
+                                  <div className="w-1.5 h-1.5 rounded-full bg-[#14F195]" />
+                                  {req}
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+
+                        <Button className="bg-gradient-to-r from-[#9945FF] to-[#14F195] text-black font-semibold">
+                          Complete Mission
+                        </Button>
+                      </div>
+
+                      {/* Phase Content */}
+                      <div className="bg-gray-800/50 rounded-xl p-6 border border-gray-700/50 mb-6">
+                        <h3 className="text-xl font-semibold text-white mb-4">Phase Details</h3>
+                        <div className="prose prose-invert max-w-none">
+                          <p className="text-gray-300 leading-relaxed">{currentPhase?.content}</p>
+                        </div>
+                        
+                        {currentPhase?.duration && (
+                          <div className="mt-4 flex items-center gap-2 text-sm text-gray-400">
+                            <Zap className="w-4 h-4" />
+                            Estimated Duration: {currentPhase.duration}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Zyno Tip */}
+                      {currentPhase?.zynoTip && (
+                        <div className="bg-gradient-to-r from-[#9945FF]/10 to-[#14F195]/10 rounded-xl p-6 border border-[#14F195]/20">
+                          <div className="flex items-start gap-3">
+                            <div className="text-2xl">🤖</div>
+                            <div>
+                              <div className="text-sm text-[#14F195] font-medium mb-2">Zyno AI Co-Founder™ suggests:</div>
+                              <p className="text-gray-300 italic">"{currentPhase.zynoTip}"</p>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* NFT Reward */}
+                      {currentPhase?.nftReward && (
+                        <div className="mt-6 p-4 rounded-xl bg-purple-900/20 border border-purple-500/30">
+                          <div className="flex items-center gap-3">
+                            <Award className="w-6 h-6 text-purple-400" />
+                            <div>
+                              <div className="font-semibold text-white">Proof-of-Skill™ NFT Reward</div>
+                              <div className="text-purple-400">{currentPhase.nftReward}</div>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Phase Feedback */}
+                  <PhaseFeedback phaseId={`phase-${currentPhaseIndex}`} />
+
+                  {/* Why It Matters Section */}
+                  <WhyItMatters content={journey.whyItMatters} />
+
+                  {/* Final Role Section */}
+                  <FinalRoleSection content={`Your journey culminates in becoming a ${journey.finalRole}, with full access to the MFAI protocol's advanced features and governance rights.`} />
+                </motion.div>
+              </AnimatePresence>
+            </div>
           </div>
         </div>
       </div>
@@ -299,3 +448,40 @@ export default function JourneyPage() {
     </MainLayout>
   );
 }
+
+export const getStaticPaths: GetStaticPaths = async () => {
+  const journeys = getAllJourneys();
+  const paths = journeys.map(journey => ({
+    params: { slug: journey.slug },
+  }));
+
+  return {
+    paths,
+    fallback: true,
+  };
+};
+
+export const getStaticProps: GetStaticProps = async ({ params }) => {
+  const slug = params?.slug as string;
+  
+  if (!slug) {
+    return {
+      notFound: true,
+    };
+  }
+
+  const journey = getJourneyByPersona(slug);
+
+  if (!journey) {
+    return {
+      notFound: true,
+    };
+  }
+
+  return {
+    props: {
+      journey,
+    },
+    revalidate: 3600,
+  };
+};
